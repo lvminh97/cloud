@@ -1,0 +1,321 @@
+//******************************************************************************
+//******************************************************************************
+function getRequest(link, func) {
+	var http = new XMLHttpRequest();
+	http.open('GET', link);
+	http.onreadystatechange = function () {
+		if (http.readyState == 4 && http.status == 200) {
+			func(http.responseText);
+		}
+	}
+	http.send(null);
+}
+
+function postRequest(link, data, func = null, func2 = null) {
+	var http = new XMLHttpRequest();
+	http.open('POST', link, true);
+	http.onreadystatechange = function () {
+		if (http.readyState == 4 && http.status == 200) {
+			func(http.responseText);
+		}
+	}
+	if(func2 != null){
+		http.upload.onprogress = function(){
+			func2(event);
+		}
+	}
+	http.send(data);
+}
+//******************************************************************************
+//******************************************************************************
+function stringLimitLength(str, limit) {
+	if (str.length <= limit)
+		return str;
+	return str.substring(0, limit) + "...";
+}
+
+function getUrlVars() {
+	var vars = {};
+	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+		vars[key] = value;
+	});
+	return vars;
+}
+
+function getById(id) {
+	return document.getElementById(id);
+}
+
+function getByName(name) {
+	return document.getElementsByName(name);
+}
+
+function signup() {
+	var fd = new FormData();
+	fd.append('fullname', document.getElementsByName('fullname')[0].value);
+	fd.append('email', document.getElementsByName('email')[0].value);
+	fd.append('username', document.getElementsByName('username')[0].value);
+	fd.append('password', document.getElementsByName('password')[0].value);
+	fd.append('password2', document.getElementsByName('password2')[0].value);
+
+	postRequest('?action=signup', fd, function (resp) {
+		console.log(resp);
+		switch (resp) {
+			case "Error: username_exist":
+				alert("Username is exist. Please try another!");
+				break;
+			case "Error: password_short":
+				alert("Password is too short. The minimum length is 8!");
+				break;
+			case "Error: password_mismatch":
+				alert("Repeat password is not match. Please try again!");
+				break;
+			case "Error: fullname_empty":
+				alert("Full name is empty!");
+				break;
+			case "Error: username_empty":
+				alert("Username is empty!");
+				break;
+			case "SignupOK":
+				location.href = "./";
+			default:
+				break;
+		}
+	});
+}
+
+function loadInfo() {
+	var data = new FormData();
+	data.append('request', 'true');
+	postRequest('./info/get_info_action.php', data, function (resp) {
+		getById('infoModalBody').innerHTML = resp;
+	});
+}
+
+function updateInfo(obj) {
+	var data = new FormData();
+	data.append('request', 'true');
+	data.append('fullname', getById('fullname').value);
+	data.append('email', getById('email').value);
+	data.append('mobile', getById('mobile').value);
+	postRequest('./info/update_info_action.php', data, function (resp) {
+		switch (resp) {
+			case "OK":
+				alert("Update the information successful!");
+				obj.previousElementSibling.click();
+				break;
+			case "Error: fullname_empty":
+				alert("Full name is empty!");
+				break;
+		}
+	});
+}
+
+function updatePassword(obj) {
+	var data = new FormData();
+	data.append('request', 'true');
+	data.append('oldpass', getById('old_pass').value);
+	data.append('newpass', getById('new_pass').value);
+	data.append('newpass2', getById('new_pass2').value);
+	postRequest('./info/change_pass_action.php', data, function (resp) {
+		switch (resp) {
+			case "OK":
+				alert("Password changed!");
+				getById('old_pass').value = '';
+				getById('new_pass').value = '';
+				getById('new_pass2').value = '';
+				obj.previousElementSibling.click();
+				break;
+			case "Error: oldpassword_wrong":
+				alert("Old password is wrong!");
+				break;
+			case "Error: password_short":
+				alert("Password is too short. The minimum length is 8!");
+				break;
+			case "Error: password_mismatch":
+				alert("Repeat password is not match. Please try again!");
+				break;
+		}
+	});
+}
+
+// function chooseImg(obj, input_name) {
+// 	var x = obj.previousElementSibling;
+// 	x.click();
+// 	x.onchange = function (e) {
+// 		var reader = new FileReader();
+// 		reader.readAsDataURL(e.srcElement.files[0]);
+// 		reader.onload = function (e) {
+// 			obj.src = e.target.result;
+// 		}
+// 		obj.previousElementSibling.previousElementSibling.style.display = 'block';
+// 		var check = document.getElementsByName(input_name);
+// 		if (check[check.length - 1].value != "") {
+// 			createImgChooser(obj.parentElement.parentElement.parentElement, input_name);
+// 		}
+// 	}
+// }
+// function createImgChooser(obj, input_name) {
+// 	var item = document.createElement('div');
+// 	item.className = 'col-md-3';
+// 	item.innerHTML = "<div style='width: 100%; height: 100%;'>\n" +
+// 		"<button class='close' type='button' style='position: relative; top: 3px; left: -28px; display: none; z-index: 100;' onclick='delImgChooser(this)'>×</button>\n" +
+// 		"<input type='file' name='" + input_name + "' style='display: none;'>\n" +
+// 		"<img src='assets/img/plus.png' class='imgChooserBg' onclick=\"chooseImg(this, '" + input_name + "')\">\n" +
+// 		"</div>";
+// 	obj.appendChild(item);
+// }
+// function delImgChooser(obj) {
+// 	obj.parentElement.parentElement.parentElement.removeChild(obj.parentElement.parentElement);
+// }
+
+function createFolder(){
+	var fd = new FormData();
+	fd.append("parent_id", getById("parent-id-create").value);
+	fd.append("name", getById("folder-name-create").value);
+	postRequest("?action=create_folder", fd, function(resp){
+		switch(resp){
+			case "CreateFolderOK":
+				location.reload(true); break;
+			case "ExistFolder":
+				alert("Thư mục đã tồn tại!"); break;
+			case "NotAllow":
+				alert("Bạn không có quyền để thay đổi thư mục này!"); break;
+		}
+	});
+}
+
+function uploadFolder(files){
+	var fd = new FormData();
+	fd.append('parent_id', getUrlVars()['itemid']);
+	var paths = "";
+	for(var i in files){
+		paths += files[i].webkitRelativePath + "##";
+		fd.append(i, files[i]);
+	}
+	fd.append("paths", paths);
+	postRequest("?action=upload_folder", fd, function(resp){
+		// console.log(resp);
+		if(resp == "NotAllowUploadFolder") alert("Bạn không đủ quyền để thay đổi mục này!");
+		else if(resp == "UploadFolderOK") window.location.reload(true);
+	},
+	function(e){
+		getById("uploadFolderProgress").style.width = Math.ceil(e.loaded / e.total * 100) + "%";
+	});
+}
+
+function uploadFile(files){
+	var fd = new FormData();
+	fd.append('parent_id', getUrlVars()['itemid']);
+
+	for(var i in files){
+		fd.append(i, files[i]);
+	}
+	postRequest("?action=upload_file", fd, 
+	function(resp){
+		if(resp == "NotAllowUploadFile") alert("Bạn không đủ quyền để thay đổi mục này!");
+		else if(resp == "UploadFileOK") window.location.reload(true);
+	},
+	function(e){
+		document.getElementById('uploadFileProgress').style.width = Math.ceil(e.loaded / e.total * 100) + "%";
+	});
+}
+
+function setDeleteItemId(obj){
+	document.getElementById('deleteItemId').innerHTML = obj.parentElement.id.split("__")[1];
+}
+function deleteItem(id){
+	var fd = new FormData();
+	fd.append('item_id', id);
+	postRequest('?action=delete_item', fd, function(resp){
+		console.log(resp);
+		if(resp == "NotAllowDeleteItem") alert("Bạn không đủ quyền để thay đổi mục này!");
+		else if(resp == "DeleteItemOK") window.location.reload(true);
+	})
+}
+
+function setRenameItem(obj){
+	document.getElementById('renameItemId').innerHTML = obj.parentElement.id.split("__")[1];
+	document.getElementById('renameItemName').value = obj.parentElement.parentElement.parentElement.previousElementSibling.children[0].innerHTML.trim();
+}
+function renameItem(id, newName){
+	var fd = new FormData();
+	fd.append('item_id', id);
+	fd.append('new_name', newName.trim());
+	postRequest('?action=rename_item', fd, function(resp){
+		// console.log(resp);
+		if(resp == "NotAllowRenameItem") alert("Bạn không đủ quyền để thay đổi mục này!");
+		else if(resp == "RenameItemOK") window.location.reload(true);
+	});
+}
+
+function downloadItem(obj){
+	var item_id = obj.parentElement.id.split("__")[1];
+	var fd = new FormData();
+	fd.append('request', 'true');
+	fd.append('item_id', item_id);
+	postRequest('operation/get_download_link.php', fd, function(resp){
+		var tag = document.createElement('a');
+		tag.href = resp;
+		tag.target = '_blank';
+		tag.setAttribute('download', resp.split('/').reverse()[0]);
+		tag.click();
+	})
+}
+function getShareList(){
+	var item_id = document.getElementById('shareItemId').innerHTML;
+	var fd = new FormData();
+	fd.append('request', 'true');
+	fd.append('item_id', item_id);
+	postRequest('operation/get_share_list.php', fd, function(resp){
+		document.getElementById('shareListPanel').innerHTML = resp;
+	});
+}
+function setShareItem(obj){
+	var item_id = obj.parentElement.id.split("__")[1];
+	document.getElementById('shareItemId').innerHTML = item_id;
+	getShareList();
+}
+function addPrivilege(item_id, ){
+	var fd = new FormData();
+	fd.append('request', 'true');
+	fd.append('item_id', document.getElementById('shareItemId').innerHTML);
+	fd.append('email', document.getElementById('share_email').value.trim());
+	fd.append('privilege', document.getElementById('share_privilege').value);
+	postRequest('operation/add_privilege_action.php', fd, function(resp){
+		switch(resp){
+			case "Not allow":
+				alert("Bạn không đủ quyền để chia sẻ mục này!");
+				break;
+			case "Email not found":
+				alert("Email không tìm thấy!");
+				break;
+			case "Map parent":
+				alert("Người dùng đã được chia sẻ mục cha của mục này!");
+				break;
+		}
+		document.getElementById('share_email').value = "";
+		getShareList();
+	});
+}
+function removePrivilege(obj){
+	var fd = new FormData();
+	fd.append('request', 'true');
+	fd.append('item_id', document.getElementById('shareItemId').innerHTML);
+	fd.append('email', obj.previousElementSibling.innerHTML.trim());
+	postRequest('operation/remove_privilege_action.php', fd, function(resp){
+		getShareList();
+		console.log(resp);
+	});
+}
+
+function fileView(file_id, type){
+	var fd = new FormData();
+	fd.append('request', 'true');
+	fd.append('file_id', file_id);
+	fd.append('type', type);
+	postRequest('view/file_view_action.php', fd, function(resp){
+		document.getElementById('fileViewTitle').innerHTML = resp.split('////')[0];
+		document.getElementById('fileViewBody').innerHTML = resp.split('////')[1];
+	});
+}
