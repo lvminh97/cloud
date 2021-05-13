@@ -11,8 +11,7 @@
 
   <!-- Divider -->
   <hr class="sidebar-divider my-0">
-
-  <li class="nav-item active">
+  <li class="nav-item">
     <a class="nav-link" href="?site=dirview&itemid=root">
       <i class="fa fa-folder"></i>
       <span>My folders</span></a>
@@ -48,5 +47,6 @@
   <?php getModal("file.upload", $viewParams) ?>
   <?php getModal("item.rename", $viewParams) ?>
   <?php getModal("item.delete", $viewParams) ?>
+  <?php getModal("share", $viewParams) ?>
 </ul>
 <!-- End of Sidebar -->

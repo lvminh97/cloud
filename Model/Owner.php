@@ -33,7 +33,10 @@ class Owner extends DB{
 	}
 
 	public function getShareItemList($uid){
-		return $this->select("owner JOIN item", "*", "owner.uid='$uid' AND owner.item_id=item.item_id AND (own='writeable' OR own='readonly'", "item.path");
+		return $this->select("owner JOIN item", 
+							"*", 
+							"owner.uid='$uid' AND owner.item_id=item.item_id AND (own='writeable' OR own='readonly') AND (item.share_mode='mode_public' OR item.share_mode='mode_normal')", 
+							"item.time ASC");
 	}
 
 	public function checkOwner($uid, $item_id){
