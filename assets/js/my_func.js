@@ -64,6 +64,9 @@ function signup() {
 			case "Error: username_exist":
 				alert("Username is exist. Please try another!");
 				break;
+			case "Error: email_exist":
+				alert("Email is exist. Please try another!");
+				break;
 			case "Error: password_short":
 				alert("Password is too short. The minimum length is 8!");
 				break;
@@ -228,7 +231,7 @@ function deleteItem(id){
 	var fd = new FormData();
 	fd.append('item_id', id);
 	postRequest('?action=delete_item', fd, function(resp){
-		console.log(resp);
+		// console.log(resp);
 		if(resp == "NotAllowDeleteItem") alert("Bạn không đủ quyền để thay đổi mục này!");
 		else if(resp == "DeleteItemOK") window.location.reload(true);
 	})
@@ -251,24 +254,63 @@ function renameItem(id, newName){
 
 function downloadItem(obj){
 	var item_id = obj.parentElement.id.split("__")[1];
+	var tag = document.createElement('a');
+	tag.href = "./?action=download&id=" + item_id;
+	tag.target = '_blank';
+	// tag.setAttribute('download', resp.split('/').reverse()[0]);
+	tag.click();
+}
+function updateShareMode(){
 	var fd = new FormData();
-	fd.append('request', 'true');
-	fd.append('item_id', item_id);
-	postRequest('operation/get_download_link.php', fd, function(resp){
-		var tag = document.createElement('a');
-		tag.href = resp;
-		tag.target = '_blank';
-		tag.setAttribute('download', resp.split('/').reverse()[0]);
-		tag.click();
-	})
+	var mode = getByName("share_mode");
+	if(mode[0].checked) fd.append("mode", "mode_public");
+	else if(mode[1].checked) fd.append("mode", "mode_normal");
+	else if(mode[2].checked) fd.append("mode", "mode_private");
+	fd.append("item_id", getById('shareItemId').innerHTML);
+	postRequest("?action=update_share_mode", fd, function(resp){
+		if(resp == "NotAllowUpdateShareMode") alert("Bạn không có quyền để thay đổi mục này!");
+		else if(resp == "UpdateShareModeOK") { 
+			getShareList();
+		}
+	});
 }
 function getShareList(){
 	var item_id = document.getElementById('shareItemId').innerHTML;
 	var fd = new FormData();
-	fd.append('request', 'true');
 	fd.append('item_id', item_id);
-	postRequest('operation/get_share_list.php', fd, function(resp){
-		document.getElementById('shareListPanel').innerHTML = resp;
+	postRequest("?action=get_share_list", fd, function(resp){
+		// console.log(resp);
+		if(resp == "NotAllowShare"){
+			alert("Bạn không đủ quyền để thực hiện chức năng này!");
+		}
+		else{
+			var data = JSON.parse(resp);
+			var mode = getByName("share_mode");
+			var display = "block";
+			if(data['mode'] == "mode_public"){
+				mode[0].checked = true;
+			}
+			else if(data['mode'] == "mode_normal"){
+				mode[1].checked = true;
+			}
+			else if(data['mode'] == "mode_private"){
+				display = "none";
+				mode[2].checked = true;
+			}
+			getById("share_list_area").style.display = display;
+			getById('shareListPanel').innerHTML = "";
+			if(data['list'] == "null") return;
+			for(var i = 0; i < data['list'].length; i++){
+				var container = document.createElement("div");
+				container.className = "share_item";
+				var privilege = "";
+				if(data['list'][i]['own'] == "readonly") privilege = "Read";
+				else if(data['list'][i]['own'] == "writeable") privilege = "Read/Write";
+				container.innerHTML = data['list'][i]['fullname'] + " - <span>" + data['list'][i]['email'] + "</span> (" + privilege 
+				+ ") <button style=\"background: transparent; color: #fff; border: none; float: right;\" onclick=\"removePrivilege(this)\"><span aria-hidden=\"true\" style=\"color: #fff;\">×</span></button>";
+				getById('shareListPanel').appendChild(container);
+			}
+		}
 	});
 }
 function setShareItem(obj){
@@ -276,46 +318,47 @@ function setShareItem(obj){
 	document.getElementById('shareItemId').innerHTML = item_id;
 	getShareList();
 }
-function addPrivilege(item_id, ){
+function addPrivilege(){
 	var fd = new FormData();
-	fd.append('request', 'true');
 	fd.append('item_id', document.getElementById('shareItemId').innerHTML);
 	fd.append('email', document.getElementById('share_email').value.trim());
 	fd.append('privilege', document.getElementById('share_privilege').value);
-	postRequest('operation/add_privilege_action.php', fd, function(resp){
+	postRequest('?action=add_privilege', fd, function(resp){
 		switch(resp){
-			case "Not allow":
+			case "NotAllowAddPrivilege":
 				alert("Bạn không đủ quyền để chia sẻ mục này!");
 				break;
-			case "Email not found":
-				alert("Email không tìm thấy!");
+			case "EmailNotFound":
+				alert("Không tìm thấy tài khoản có email này!");
 				break;
-			case "Map parent":
-				alert("Người dùng đã được chia sẻ mục cha của mục này!");
+			case "AlreadyPrivilegeParent":
+				alert("Người dùng đã được chia sẻ mục này!");
+				break;
+			case "AddPrivilegeOK":
+				document.getElementById('share_email').value = "";
+				getShareList();
 				break;
 		}
-		document.getElementById('share_email').value = "";
-		getShareList();
 	});
 }
 function removePrivilege(obj){
 	var fd = new FormData();
-	fd.append('request', 'true');
 	fd.append('item_id', document.getElementById('shareItemId').innerHTML);
 	fd.append('email', obj.previousElementSibling.innerHTML.trim());
-	postRequest('operation/remove_privilege_action.php', fd, function(resp){
+	console.log(obj.previousElementSibling.innerHTML.trim());
+	postRequest('?action=remove_privilege', fd, function(resp){
 		getShareList();
 		console.log(resp);
 	});
 }
 
-function fileView(file_id, type){
-	var fd = new FormData();
-	fd.append('request', 'true');
-	fd.append('file_id', file_id);
-	fd.append('type', type);
-	postRequest('view/file_view_action.php', fd, function(resp){
-		document.getElementById('fileViewTitle').innerHTML = resp.split('////')[0];
-		document.getElementById('fileViewBody').innerHTML = resp.split('////')[1];
-	});
-}
+// function fileView(file_id, type){
+// 	var fd = new FormData();
+// 	fd.append('request', 'true');
+// 	fd.append('file_id', file_id);
+// 	fd.append('type', type);
+// 	postRequest('view/file_view_action.php', fd, function(resp){
+// 		document.getElementById('fileViewTitle').innerHTML = resp.split('////')[0];
+// 		document.getElementById('fileViewBody').innerHTML = resp.split('////')[1];
+// 	});
+// }

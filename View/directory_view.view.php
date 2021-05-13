@@ -4,22 +4,32 @@
 <body id="page-top">
   <!-- Page Wrapper -->
   <div id="wrapper">
-    <?php getTemplate("sidebar", $viewParams); ?>
+    <?php if($viewParams['type'] != "public") getTemplate("sidebar", $viewParams); ?>
     <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
       <!-- Main Content -->
       <div id="content">
-        <?php getTemplate("topbar", $viewParams); ?>
+        <?php if($viewParams['type'] != "public") getTemplate("topbar", $viewParams); ?>
         <!-- Begin Page Content -->
         <div class="container-fluid">
           <!-- Content Row -->
           <div class="row">
             <div class="col-12">
-              <h5 style="display: block; font-weight: bold; margin-left: 50px; margin-bottom: 20px;">
+              <?php 
+              if($viewParams['type'] == "public") {
+                $mTop = "50px";
+                $dirHeight = "75vh";
+              }
+              else {
+                $mTop = "auto";
+                $dirHeight = "64vh";
+              }
+              ?>
+              <h5 style="display: block; font-weight: bold; margin-left: 50px; margin-top: <?php echo $mTop?>; margin-bottom: 20px;">
                 <?php echo $viewParams['itemTitle'] ?>
               </h5>
 
-              <div style="display: block; width: 90%; height: 64vh; margin-left: 50px; margin-right: 50px; overflow-y: scroll; background: #fff; border: solid #eee;">
+              <div style="display: block; width: 90%; height: <?php echo $dirHeight ?>; margin-left: 50px; margin-right: 50px; overflow-y: scroll; background: #fff; border: solid #eee;">
                 <div class="table-responsive">
                   <table class="table">
                     <?php
@@ -59,9 +69,16 @@
                                 <?php if ($item['type'] != "folder") { ?>
                                   <li onclick="downloadItem(this)">Tải xuống</li>
                                 <?php } ?>
-                                <li data-toggle="modal" onclick="setShareItem(this)" data-target="#shareModal">Chia sẻ </li>
+                                <?php if($viewParams['type'] == "own"){ ?>
+                                <li data-toggle="modal" onclick="setShareItem(this)" data-target="#shareModal">Chia sẻ </li> <?php } ?>
+                                <?php 
+                                if($viewParams['type'] != "public"){ ?>
                                 <li data-toggle="modal" onclick="setRenameItem(this)" data-target="#renameModal">Đổi tên</li>
-                                <li data-toggle="modal" onclick="setDeleteItemId(this)" data-target="#deleteModal">Xóa</li>
+                                <li data-toggle="modal" onclick="setDeleteItemId(this)" data-target="#deleteModal">Xóa</li> 
+                                <?php }
+                                else { ?>
+                                <li data-toggle="modal" onclick="alert('Bạn không có quyền để thực hiện mục này?')" data-target="#renameModal">Đổi tên</li>
+                                <li data-toggle="modal" onclick="alert('Bạn không có quyền để thực hiện mục này?')" data-target="#deleteModal">Xóa</li> <?php } ?>
                               </ul>
                             </div>
                           <?php

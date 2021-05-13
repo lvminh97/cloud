@@ -110,7 +110,8 @@ class Item extends DB{
 									'path' => $path,
 									'type' => $type,
 									'parent_id' => $parent_id,
-									'time' => date("Y-m-d H:i:s")));
+									'time' => date("Y-m-d H:i:s"),
+									'share_mode' => $this->getShareMode($parent_id)));
 		return $item_id;
 	}
 
@@ -140,6 +141,37 @@ class Item extends DB{
 			}
 			$this->update("item", array('path' => getPreviousPath($path)."/".$newName), "item_id='$item_id'");
 		}
+	}
+
+	public function setShareMode($item_id, $mode){
+		$item = $this->getItem($item_id);
+		$this->update("item", array('share_mode' => $mode), "item_id='$item_id'");
+		$this->update("item", array('share_mode' => $mode), "path LIKE '{$item['path']}/%'");
+	}
+
+	public function getShareMode($item_id){
+		while(true){
+			$item = $this->getItem($item_id);
+			if($item['share_mode'] == "mode_normal" || $item['share_mode'] == "mode_public") return $item['share_mode'];
+			if($item['parent_id'] != "root") $item_id = $item['parent_id'];
+			else return "mode_private";
+		}
+	}
+
+	public function getFileContent($item_id){
+		$item = $this->getItem($item_id);
+		if($item == "null") $content = "";
+		else{
+			$content = array();
+			$path = "./Resource/".$item['path'];
+			$size = filesize($path);
+			$fp = fopen($path, "rb");
+			$content['data'] = fread($fp, $size);
+			$content['filename'] = getItemName($path);
+			$content['size'] = $size;
+			fclose($fp);
+		}
+		return $content;
 	}
 }
 ?>

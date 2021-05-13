@@ -31,9 +31,9 @@ class Account extends DB{
 
 	public function login($username, $password){
 		sessionInit();
-		$check = $this->getList("username='$username' AND password='$password'");
+		$check = $this->getList("(username='$username' OR email='$username') AND password='$password'");
 		if(count($check) == 1){
-			$_SESSION['qcloud_user'] = $username;
+			$_SESSION['qcloud_user'] = $check[0]['username'];
 			$_SESSION['qcloud_pass'] = $password;
 			$_SESSION['qcloud_uid']  = $check[0]['uid'];
 			return "loginOK";
@@ -53,7 +53,7 @@ class Account extends DB{
 	public function checkLoggedIn(){
 		sessionInit();
 		if(!isset($_SESSION['qcloud_user']) || !isset($_SESSION['qcloud_pass'])) return "Role_None";
-		$check = $this->getList("username='{$_SESSION['qcloud_user']}' AND password='{$_SESSION['qcloud_pass']}'");
+		$check = $this->getList("uid='{$_SESSION['qcloud_uid']}' AND password='{$_SESSION['qcloud_pass']}'");
 		if(count($check) != 1){
 			$this->logout();
 			return "Role_None";
@@ -79,6 +79,10 @@ class Account extends DB{
 
 	public function checkUsername($username){
 		return count($this->getList("username='$username'")) == 0;
+	}
+
+	public function checkEmail($email){
+		return count($this->getList("email='$email'")) == 0;
 	}
 
 	public function checkPassword($password, $password2){
