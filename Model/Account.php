@@ -73,8 +73,8 @@ class Account extends DB{
 		return $uid;
 	}
 
-	public function updateInfo($account_id, $fullname, $email, $mobile){
-		// $this->db->execute("UPDATE account SET fullname='$fullname', email='$email', mobile='$mobile' WHERE account_id='$account_id'");
+	public function updateInfo($uid, $fullname, $email){
+		$this->update("account", array('fullname' => $fullname, 'email' => $email), "uid='$uid'");
 	}
 
 	public function checkUsername($username){
@@ -85,17 +85,8 @@ class Account extends DB{
 		return count($this->getList("email='$email'")) == 0;
 	}
 
-	public function checkPassword($password, $password2){
-		if(strlen($password) < 8)
-			return 1; // password is too short
-		elseif($password != $password2)
-			return 2; // password is mismatch
-		else
-			return 0; // OK
-	}
-
-	public function changePassword($account_id, $new_password){
-		$this->update("account", array('password' => $new_password), "account_id='$account_id'");
+	public function changePassword($uid, $new_password){
+		$this->update("account", array('password' => $new_password), "uid='$uid'");
 	}
 
 	// public function removeItem($account_id){

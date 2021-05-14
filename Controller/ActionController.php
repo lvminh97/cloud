@@ -46,6 +46,53 @@ class ActionController extends Controller{
 		}
     }
 
+	public function loadInfoAction(){
+		if($this->accountObj->checkLoggedIn() != "Role_User") return;
+		else $uid = getSession('qcloud_uid');
+		$user = $this->accountObj->getItem($uid);
+		echo json_encode(array('uid' => $uid, 'username' => $user['username'], 'email' => $user['email'], 'fullname' => $user['fullname']));
+	}
+
+	public function updateInfoAction($data){
+		if($this->accountObj->checkLoggedIn() != "Role_User") return;
+		else $uid = getSession('qcloud_uid');
+		if(trim($data['fullname']) == "") { 
+			echo "EmptyFullname"; 
+			return; 
+		}
+		$check = $this->accountObj->getList("email='{$data['email']}' AND uid!='$uid'");
+		if(count($check) == 1){
+			echo "ExistEmail";
+			return;
+		}
+		$this->accountObj->updateInfo($uid, $data['fullname'], $data['email']);
+		echo "UpdateInfoOK";
+	}
+
+	public function changePassAction($data){
+		if($this->accountObj->checkLoggedIn() != "Role_User") return;
+		else $uid = getSession('qcloud_uid');
+		//
+		$oldpass = _hash($data['oldpass']);
+		$check = $this->accountObj->getList("uid='$uid' AND password='$oldpass'");
+		if(count($check) == 0){
+			echo "OldPassWrong";
+			return;
+		}
+		if(strlen($data['newpass']) < 8){
+			echo "ShortPassword";
+			return;
+		}
+		if($data['newpass'] != $data['newpass2']){
+			echo "PasswordMismatch";
+			return;
+		}
+		$this->accountObj->changePassword($uid, _hash($data['newpass']));
+		$_SESSION['qcloud_pass'] = _hash($data['newpass']);
+		echo "ChangePassOK";
+		return;
+	}
+
 	public function createFolderAction($data){
 		if($this->accountObj->checkLoggedIn() != "Role_User") return;
 		else $uid = getSession('qcloud_uid');
@@ -229,34 +276,45 @@ class ActionController extends Controller{
 		}
 	}
 
+	public function getFileDataAction($data){
+		$item = $this->itemObj->getItem($data['file_id']);
+		$path = "./Resource/".$item['path'];
+		$resp = array('title' => getItemName($path));
+
+		switch ($data['type']) {
+			case 'image/jpeg':
+			case 'image/png':
+			case 'image/x-icon':
+				$resp['content'] = "<center><img src=\"$path\" style=\"height: 70vh; width: auto; border: solid #eee;\"></center>";
+				break;
+			
+			case 'text/plain':
+			case 'application/octet-stream':
+				$tmp = "<div style=\"margin: 10px; border: solid #ddd; background-color: #fff; height: 70vh; max-height: 70vh; overflow-y: scroll;\">";
+				$tmp .= "<pre>";
+				$file = fopen($path, "r");
+				$outText = '';
+				while (!feof($file)) {
+					$c = fgetc($file);
+					if($c == '<') $c = '&lt;';
+					$tmp .= $c;
+				}
+				fclose($file);
+				$tmp .= "</pre></div>";
+				$resp['content'] = $tmp;
+				break;
+			case 'application/pdf':
+				$resp['content'] = "<center><embed src=\"$path\" style=\"height: 70vh; width: 100%; border: solid #eee;\" /></center>";
+				break;
+			default:
+				$resp['content'] = "";
+				break;
+		}
+		echo json_encode($resp);
+	}
+
 	public function testAction(){
-		$db = new DB('localhost', 'root', '', 'test_cloud');
-		// $itemList = $db->select("item", "*");
-		// foreach($itemList as $item){
-		// 	if($item['parent_id'] == "root"){
-		// 		$uid = explode('/', $item['path'])[0];
-		// 		$db->update("item", array('parent_id' => "Root_".$uid), "item_id='{$item['item_id']}'");
-		// 	}
-		// 	$db->update("item", array('path' => "Root_".$item['path']), "item_id='{$item['item_id']}'");
-		// }
-		// $userList = $db->select("account", "*");
-		// foreach($userList as $user){
-		// 	$db->insert("item", array('item_id' => "Root_".$user['uid'],
-		// 								'path' => "Root_".$user['uid'],
-		// 								'type' => "folder",
-		// 								'parent_id' => "root",
-		// 								'time' => date("Y-m-d H:i:s")));
-		// 	$db->insert("owner", array('uid' => $user['uid'],
-		// 								'item_id' => "Root_".$user['uid'],
-		// 								'own' => "owner"));										
-		// }
-		// $ownList = $db->select("owner", "*", "own='readonly' OR own='writeable'");
-		// foreach($ownList as $ownItem){
-		// 	$item_id = $ownItem['item_id'];
-		// 	$item = $db->select("item", "*", "item_id='$item_id'")[0];
-		// 	$db->update("item", array("share_mode" => "mode_normal"), "item_id='$item_id'");
-		// 	$db->update("item", array("share_mode" => "mode_normal"), "path LIKE '{$item['path']}/%'");
-		// }
+
 	}
 }
 ?>

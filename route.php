@@ -8,6 +8,10 @@
     $route->post("action", "loginAct", "ActionController@login");
     $route->get("action", "loginAct", "ViewController@getIndex");
     $route->get("action", "logout", "ActionController@logout");
+    // Personal info
+    $route->get("action", "load_info", "ActionController@loadInfoAction");
+    $route->post("action", "update_info", "ActionController@updateInfoAction");
+    $route->post("action", "change_pass", "ActionController@changePassAction");
     // Directory view
     $route->get("site", "dirview", "ViewController@getDirectoryViewPage");
     // Create, upload, rename, delete
@@ -23,6 +27,7 @@
     $route->post("action", "remove_privilege", "ActionController@removePrivilegeAction");
     // Download
     $route->get("action", "download", "ActionController@getDownloadAction");
+    $route->post("action", "get_file_data", "ActionController@getFileDataAction");
 
     // $route->get("action", "test", "ActionController@testAction");
 

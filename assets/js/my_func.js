@@ -88,27 +88,30 @@ function signup() {
 }
 
 function loadInfo() {
-	var data = new FormData();
-	data.append('request', 'true');
-	postRequest('./info/get_info_action.php', data, function (resp) {
-		getById('infoModalBody').innerHTML = resp;
+	getRequest('?action=load_info', function (resp) {
+		var data = JSON.parse(resp);
+		getById("info_email").value = data['email'];
+		getById("info_username").value = data['username'];
+		getById("info_fullname").value = data['fullname'];
 	});
 }
 
 function updateInfo(obj) {
-	var data = new FormData();
-	data.append('request', 'true');
-	data.append('fullname', getById('fullname').value);
-	data.append('email', getById('email').value);
-	data.append('mobile', getById('mobile').value);
-	postRequest('./info/update_info_action.php', data, function (resp) {
+	var fd = new FormData();
+	fd.append('fullname', getById('info_fullname').value);
+	fd.append('email', getById('info_email').value);
+	postRequest('?action=update_info', fd, function (resp) {
 		switch (resp) {
-			case "OK":
-				alert("Update the information successful!");
+			case "UpdateInfoOK":
+				alert("Cập nhật thành công!");
 				obj.previousElementSibling.click();
+				window.location.reload(true);
 				break;
-			case "Error: fullname_empty":
-				alert("Full name is empty!");
+			case "EmptyFullname":
+				alert("Họ tên không được để trống!");
+				break;
+			case "ExistEmail":
+				alert("Email đã có người sử dụng!");
 				break;
 		}
 	});
@@ -116,27 +119,26 @@ function updateInfo(obj) {
 
 function updatePassword(obj) {
 	var data = new FormData();
-	data.append('request', 'true');
 	data.append('oldpass', getById('old_pass').value);
 	data.append('newpass', getById('new_pass').value);
 	data.append('newpass2', getById('new_pass2').value);
-	postRequest('./info/change_pass_action.php', data, function (resp) {
+	postRequest('?action=change_pass', data, function (resp) {
 		switch (resp) {
-			case "OK":
-				alert("Password changed!");
+			case "ChangePassOK":
+				alert("Đổi mật khẩu thành công!");
 				getById('old_pass').value = '';
 				getById('new_pass').value = '';
 				getById('new_pass2').value = '';
 				obj.previousElementSibling.click();
 				break;
-			case "Error: oldpassword_wrong":
-				alert("Old password is wrong!");
+			case "OldPassWrong":
+				alert("Mật khẩu cũ không đúng!");
 				break;
-			case "Error: password_short":
-				alert("Password is too short. The minimum length is 8!");
+			case "ShortPassword":
+				alert("Độ dài mật khẩu tối thiểu 8 ký tự");
 				break;
-			case "Error: password_mismatch":
-				alert("Repeat password is not match. Please try again!");
+			case "PasswordMismatch":
+				alert("Mật khẩu mới nhập không khớp!");
 				break;
 		}
 	});
@@ -352,13 +354,15 @@ function removePrivilege(obj){
 	});
 }
 
-// function fileView(file_id, type){
-// 	var fd = new FormData();
-// 	fd.append('request', 'true');
-// 	fd.append('file_id', file_id);
-// 	fd.append('type', type);
-// 	postRequest('view/file_view_action.php', fd, function(resp){
-// 		document.getElementById('fileViewTitle').innerHTML = resp.split('////')[0];
-// 		document.getElementById('fileViewBody').innerHTML = resp.split('////')[1];
-// 	});
-// }
+function fileView(file_id, type){
+	var fd = new FormData();
+	fd.append('file_id', file_id);
+	fd.append('type', type);
+	getById('fileViewBody').innerHTML = "";
+	postRequest('?action=get_file_data', fd, function(resp){
+		// console.log(resp);
+		var data = JSON.parse(resp);
+		getById('fileViewTitle').innerHTML = data['title'];
+		getById('fileViewBody').innerHTML = data['content'];
+	});
+}
