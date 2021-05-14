@@ -30,10 +30,10 @@ class ActionController extends Controller{
 		elseif(!$this->accountObj->checkEmail($data['email'])){
 			echo "Error: email_exist";
 		}
-		elseif($this->accountObj->checkPassword($data['password'], $data['password2']) == "1"){
+		elseif(strlen($data['password']) < 8){
 			echo "Error: password_short";
 		}
-		elseif($this->accountObj->checkPassword($data['password'], $data['password2']) == "2"){
+		elseif($data['password'] != $data['password2']){
 			echo "Error: password_mismatch";
 		}
 		else{
@@ -285,7 +285,7 @@ class ActionController extends Controller{
 			case 'image/jpeg':
 			case 'image/png':
 			case 'image/x-icon':
-				$resp['content'] = "<center><img src=\"$path\" style=\"height: 70vh; width: auto; border: solid #eee;\"></center>";
+				$resp['content'] = "<center><img src=\"$path\" style=\"height: 70vh; width: auto; max-width: 90%; border: solid #eee;\"></center>";
 				break;
 			
 			case 'text/plain':
