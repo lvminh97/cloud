@@ -93,6 +93,7 @@
                       <td colspan="5" height="150px" style="background-color: transparent;"></td>
                     </tr>
                   </table>
+                  <?php getModal("file.view", $viewParams) ?>
                 </div>
               </div>
             </div>

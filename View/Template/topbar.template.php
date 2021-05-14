@@ -57,11 +57,11 @@
       <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#infoModal" onclick="loadInfo();">
           <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-          Update information
+          Thông tin cá nhân
         </a>
         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#changePassModal">
           <i class="fas fa-lock fa-sm fa-fw mr-2 text-gray-400"></i>
-          Change password
+          Đổi mật khẩu
         </a>
         <div class="dropdown-divider"></div>
         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
@@ -71,63 +71,8 @@
       </div>
     </li>
     <!-- Logout Modal--><?php getModal("logout")?>
-    <!-- Info Modal-->
-    <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Update personal information</h5>
-            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-          <div class="modal-body" id="infoModalBody">
-            
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-            <button class="btn btn-primary" onclick="updateInfo(this)">Update</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Change Password Modal-->
-    <div class="modal fade" id="changePassModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Change password</h5>
-            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group row">
-              <label class="col-sm-5 col-form-label">Old password</label>
-              <div class="col-sm-7">
-                <input type="password" class="form-control" id="old_pass" required>
-              </div>
-            </div>
-            <div class="form-group row">
-              <label class="col-sm-5 col-form-label">New password</label>
-              <div class="col-sm-7">
-                <input type="password" class="form-control" id="new_pass" required>
-              </div>
-            </div>
-            <div class="form-group row">
-              <label class="col-sm-5 col-form-label">Retype new password</label>
-              <div class="col-sm-7">
-                <input type="password" class="form-control" id="new_pass2" required>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-            <button class="btn btn-primary" onclick="updatePassword(this)">Update</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Info Modal--><?php getModal("info") ?>
+    <!-- Change Password Modal--> <?php getModal("changepass") ?>
   </ul>
 </nav>
 <!-- End of Topbar -->
