@@ -150,6 +150,7 @@ class Item extends DB{
 	}
 
 	public function getShareMode($item_id){
+		if($item_id == "root") return "mode_private";
 		while(true){
 			$item = $this->getItem($item_id);
 			if($item['share_mode'] == "mode_normal" || $item['share_mode'] == "mode_public") return $item['share_mode'];

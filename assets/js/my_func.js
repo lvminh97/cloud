@@ -80,7 +80,7 @@ function signup() {
 				alert("Username is empty!");
 				break;
 			case "SignupOK":
-				location.href = "./";
+				location.href = "./.";
 			default:
 				break;
 		}
@@ -200,7 +200,7 @@ function uploadFolder(files){
 	}
 	fd.append("paths", paths);
 	postRequest("?action=upload_folder", fd, function(resp){
-		// console.log(resp);
+		console.log(resp);
 		if(resp == "NotAllowUploadFolder") alert("Bạn không đủ quyền để thay đổi mục này!");
 		else if(resp == "UploadFolderOK") window.location.reload(true);
 	},
